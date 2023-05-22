@@ -2,19 +2,23 @@ use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct Movie {
+pub struct Movie<'doc> {
     #[serde(rename = "_id")]
     id: ObjectId,
-    #[serde(rename = "imdbId")]
-    imdb_id: String,
-    title: String,
-    #[serde(rename = "releaseDate")]
-    release_date: String,
-    #[serde(rename = "trailerLink")]
-    trailer_link: String,
-    genres: Vec<String>,
-    poster: String,
-    backdrops: Vec<String>,
-    #[serde(rename = "reviewIds")]
-    review_ids: Vec<String>,
+    #[serde(rename = "imdbId", borrow)]
+    imdb_id: &'doc str,
+    #[serde(borrow)]
+    title: &'doc str,
+    #[serde(rename = "releaseDate", borrow)]
+    release_date: &'doc str,
+    #[serde(rename = "trailerLink", borrow)]
+    trailer_link: &'doc str,
+    #[serde(borrow)]
+    genres: Vec<&'doc str>,
+    #[serde(borrow)]
+    poster: &'doc str,
+    #[serde(borrow)]
+    backdrops: Vec<&'doc str>,
+    #[serde(rename = "reviewIds", borrow)]
+    review_ids: Vec<&'doc str>,
 }

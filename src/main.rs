@@ -1,15 +1,17 @@
 #[macro_use]
 extern crate rocket;
 
-use backend_practice::data::Movie;
+use backend_practice::{
+    api::{get_all_routes, MovieRepo},
+    data::Movie,
+};
 use bson::{Bson, Document};
 use mongodb::{
     bson::doc,
     options::{ClientOptions, ServerApi, ServerApiVersion},
-    Client,
+    Client, Collection,
 };
 use rocket::futures::StreamExt;
-
 use std::error::Error;
 
 #[get("/")]
@@ -19,35 +21,19 @@ fn index() -> &'static str {
 
 #[rocket::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let mut client_options = ClientOptions::parse("mongodb+srv://demo-user:pWQjwEPkF2JnBVvk@demo-cluster.tquryab.mongodb.net/?retryWrites=true&w=majority").await?;
+    let movie_repo = MovieRepo::new();
+    let mut cursor = movie_repo.find(None, None).await?;
 
-    // Set the server_api field of the client_options object to Stable API version 1
-    let server_api = ServerApi::builder().version(ServerApiVersion::V1).build();
-    client_options.server_api = Some(server_api);
-
-    // Get a handle to the cluster
-    let client = Client::with_options(client_options)?;
-
-    // Ping the server to see if you can connect to the cluster
-    client
-        .database("admin")
-        .run_command(doc! {"ping": 1}, None)
-        .await?;
-
-    println!("Pinged your deployment. You successfully connected to MongoDB!");
-
-    let movies = client
-        .database("demo-database")
-        .collection::<Document>("demo-collection");
-
-    let mut cursor = movies.find(None, None).await?;
-
-    while let Some(doc) = cursor.next().await {
-        let movie: Movie = bson::from_bson(Bson::Document(doc?))?;
+    while cursor.advance().await? {
+        let movie = cursor.deserialize_current()?;
         println!("{:?}", movie);
     }
 
-    let _rocket = rocket::build().mount("/", routes![index]).launch().await?;
+    let _rocket = rocket::build()
+        .mount("/", routes![index])
+        .mount("/api/v1", get_all_routes())
+        .launch()
+        .await?;
 
     Ok(())
 }
