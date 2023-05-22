@@ -1,17 +1,8 @@
 #[macro_use]
 extern crate rocket;
 
-use backend_practice::{
-    api::{get_all_routes, MovieRepo},
-    data::Movie,
-};
-use bson::{Bson, Document};
-use mongodb::{
-    bson::doc,
-    options::{ClientOptions, ServerApi, ServerApiVersion},
-    Client, Collection,
-};
-use rocket::futures::StreamExt;
+use backend_practice::api::{get_all_routes, MovieRepo};
+use mongodb::bson::doc;
 use std::error::Error;
 
 #[get("/")]
@@ -21,8 +12,8 @@ fn index() -> &'static str {
 
 #[rocket::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let movie_repo = MovieRepo::new();
-    let mut cursor = movie_repo.find(None, None).await?;
+    let movie_repo = MovieRepo::new().await;
+    let mut cursor = movie_repo.movie_collection.find(None, None).await?;
 
     while cursor.advance().await? {
         let movie = cursor.deserialize_current()?;
