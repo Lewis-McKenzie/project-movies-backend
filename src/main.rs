@@ -1,7 +1,9 @@
 #[macro_use]
 extern crate rocket;
 
-use backend_practice::api::{get_all_routes, MovieRepo, MovieService};
+use backend_practice::api::{
+    get_all_routes, movie_controller::init_movie_controller, MovieService,
+};
 use mongodb::bson::doc;
 use std::error::Error;
 
@@ -12,7 +14,7 @@ fn index() -> &'static str {
 
 #[rocket::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let movie_service: MovieService;
+    init_movie_controller();
 
     let _rocket = rocket::build()
         .mount("/", routes![index])

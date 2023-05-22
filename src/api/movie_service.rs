@@ -2,23 +2,23 @@ use crate::data::Movie;
 
 use super::MovieRepo;
 
-pub struct MovieService<'a> {
-    movie_repo: MovieRepo<'a>,
+pub struct MovieService {
+    movie_repo: MovieRepo,
 }
 
-impl<'a> MovieService<'a> {
-    pub async fn new() -> MovieService<'a> {
+impl MovieService {
+    pub async fn new() -> MovieService {
         MovieService {
             movie_repo: MovieRepo::new().await,
         }
     }
 
-    pub async fn get_all_movies(&self) -> Vec<Movie<'a>> {
-        let movies: Vec<Movie> = vec![];
+    pub async fn get_all_movies(&self) -> Vec<Movie> {
+        let mut movies: Vec<Movie> = vec![];
 
         let mut cursor = match self.movie_repo.movie_collection.find(None, None).await {
             Ok(v) => v,
-            Err(e) => return movies,
+            Err(_) => return movies,
         };
 
         while cursor.advance().await.unwrap_or(false) {

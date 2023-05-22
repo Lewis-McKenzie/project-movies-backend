@@ -7,13 +7,13 @@ use std::error::Error;
 
 use crate::data::Movie;
 
-pub struct MovieRepo<'a> {
+pub struct MovieRepo {
     client: Client,
-    pub movie_collection: Collection<Movie<'a>>,
+    pub movie_collection: Collection<Movie>,
 }
 
-impl<'a> MovieRepo<'a> {
-    pub async fn new() -> MovieRepo<'a> {
+impl MovieRepo {
+    pub async fn new() -> MovieRepo {
         let mut client_options = ClientOptions::parse("mongodb+srv://demo-user:pWQjwEPkF2JnBVvk@demo-cluster.tquryab.mongodb.net/?retryWrites=true&w=majority").await.unwrap();
 
         // Set the server_api field of the client_options object to Stable API version 1
