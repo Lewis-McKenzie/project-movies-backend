@@ -1,7 +1,7 @@
-use bson::doc;
+use bson::{doc, oid::ObjectId};
 use mongodb::{
     options::{ClientOptions, ServerApi, ServerApiVersion},
-    Client, Collection,
+    Client, Collection, Cursor,
 };
 use std::error::Error;
 
@@ -42,5 +42,16 @@ impl MovieRepo {
 
         println!("Pinged your deployment. You successfully connected to MongoDB!");
         Ok(())
+    }
+
+    pub async fn find_all_movies(&self) -> Result<Cursor<Movie>, mongodb::error::Error> {
+        self.movie_collection.find(None, None).await
+    }
+
+    pub async fn find_movie_by_id(
+        &self,
+        id: ObjectId,
+    ) -> Result<Option<Movie>, mongodb::error::Error> {
+        self.movie_collection.find_one(doc! {"_id":id }, None).await
     }
 }

@@ -1,3 +1,5 @@
+use bson::oid::ObjectId;
+
 use crate::data::Movie;
 
 use super::MovieRepo;
@@ -16,7 +18,7 @@ impl MovieService {
     pub async fn get_all_movies(&self) -> Vec<Movie> {
         let mut movies: Vec<Movie> = vec![];
 
-        let mut cursor = match self.movie_repo.movie_collection.find(None, None).await {
+        let mut cursor = match self.movie_repo.find_all_movies().await {
             Ok(v) => v,
             Err(_) => return movies,
         };
@@ -29,5 +31,12 @@ impl MovieService {
             movies.push(movie);
         }
         movies
+    }
+
+    pub async fn get_movie_by_id(
+        &self,
+        id: ObjectId,
+    ) -> Result<Option<Movie>, mongodb::error::Error> {
+        self.movie_repo.find_movie_by_id(id).await
     }
 }

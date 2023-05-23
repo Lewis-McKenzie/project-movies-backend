@@ -1,34 +1,30 @@
-use rocket::serde::json::Json;
+use mongodb::bson::oid::ObjectId;
+use rocket::{response::status::BadRequest, serde::json::Json, State};
 
 use crate::data::Movie;
 
 use super::MovieService;
 
-pub struct MovieController {
-    movie_service: Option<MovieService>,
-}
-
-impl MovieController {
-    pub async fn new() -> MovieController {
-        MovieController {
-            movie_service: Some(MovieService::new().await),
-        }
-    }
-
-    pub async fn get_all_movies(&self) -> Vec<Movie> {
-        self.movie_service.as_ref().unwrap().get_all_movies().await
-    }
-}
-
-static movie_controller: MovieController = MovieController {
-    movie_service: None,
-};
-
-pub async fn init_movie_controller() -> () {
-    movie_controller = MovieController::new().await;
-}
-
 #[get("/movies")]
-pub async fn get_movies() -> Json<Vec<Movie>> {
-    Json(movie_controller.get_all_movies().await)
+pub async fn get_movies(movie_service: &State<MovieService>) -> Json<Vec<Movie>> {
+    Json(movie_service.get_all_movies().await)
+}
+
+#[get("/movies/<id>")]
+pub async fn get_movies_by_id(
+    movie_service: &State<MovieService>,
+    id: String,
+) -> Result<Json<Movie>, BadRequest<Json<String>>> {
+    let oid = match ObjectId::parse_str(&id) {
+        Ok(id) => id,
+        Err(_) => return Err(BadRequest(Some(Json(format!("Invalid id: {}", &id))))),
+    };
+
+    match movie_service.get_movie_by_id(oid).await {
+        Ok(movie_option) => match movie_option {
+            Some(movie) => Ok(Json(movie)),
+            None => Err(BadRequest(Some(Json(format!("No movie with id {}", &id))))),
+        },
+        Err(e) => Err(BadRequest(Some(Json(e.to_string())))),
+    }
 }
