@@ -7,5 +7,7 @@ impl ReviewRepo {
         ReviewRepo {}
     }
 
-    pub async fn insert_review(&self, review: Review) -> () {}
+    pub async fn insert_review(&self, review: Review) -> () {
+        print!("inserting review\n")
+    }
 }

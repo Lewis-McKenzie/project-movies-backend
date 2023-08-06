@@ -35,7 +35,7 @@ impl MovieService {
 
     pub async fn get_movie_by_id(
         &self,
-        id: ObjectId,
+        id: &String,
     ) -> Result<Option<Movie>, mongodb::error::Error> {
         self.movie_repo.find_movie_by_id(id).await
     }

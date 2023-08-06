@@ -50,8 +50,10 @@ impl MovieRepo {
 
     pub async fn find_movie_by_id(
         &self,
-        id: ObjectId,
+        id: &String,
     ) -> Result<Option<Movie>, mongodb::error::Error> {
-        self.movie_collection.find_one(doc! {"_id":id }, None).await
+        self.movie_collection
+            .find_one(doc! {"imdbId":id }, None)
+            .await
     }
 }
